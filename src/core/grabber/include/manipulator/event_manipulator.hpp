@@ -137,15 +137,51 @@ public:
 
     // ----------------------------------------
     // modify keys
+    if (from_key_code == (krbn::key_code)kHIDUsage_KeyboardLeftControl) {
+      left_ctrl_pressed = pressed;
+    }
+      
+    bool ctrl_hjkl = false;
     if (!pressed) {
       if (auto key_code = manipulated_keys_.find(device_registry_entry_id, from_key_code)) {
         manipulated_keys_.remove(device_registry_entry_id, from_key_code);
         to_key_code = *key_code;
       }
     } else {
-      if (auto key_code = simple_modifications_.get(from_key_code)) {
+        
+        boost::optional<krbn::key_code> key_code = simple_modifications_.get(from_key_code);
+        
+        if (left_ctrl_pressed) {
+            switch (to_key_code) {
+                case krbn::key_code::h:
+                    key_code = krbn::key_code::left_arrow;
+                    ctrl_hjkl = true;
+                    break;
+                case krbn::key_code::j:
+                    key_code = krbn::key_code::down_arrow;
+                    ctrl_hjkl = true;
+                    break;
+                case krbn::key_code::k:
+                    key_code = krbn::key_code::up_arrow;
+                    ctrl_hjkl = true;
+                    break;
+                case krbn::key_code::l:
+                    key_code = krbn::key_code::right_arrow;
+                    ctrl_hjkl = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+        
+      if (key_code) {
         manipulated_keys_.add(device_registry_entry_id, from_key_code, *key_code);
         to_key_code = *key_code;
+      }
+        
+      if (ctrl_hjkl) {
+          handle_keyboard_event(device_registry_entry_id, (krbn::key_code)kHIDUsage_KeyboardLeftControl, keyboard_type, false);
+          left_ctrl_pressed = true;
       }
     }
 
@@ -183,9 +219,8 @@ public:
           break;
         }
       }
-
+    
       // f1-f12
-      {
         auto key_code_value = static_cast<uint32_t>(to_key_code);
         if (kHIDUsage_KeyboardF1 <= key_code_value && key_code_value <= kHIDUsage_KeyboardF12) {
           bool keyboard_fn_state = false;
@@ -204,7 +239,6 @@ public:
             }
           }
         }
-      }
 
       if (key_code) {
         manipulated_fn_keys_.add(device_registry_entry_id, to_key_code, *key_code);
@@ -222,7 +256,7 @@ public:
       }
       return;
     }
-
+      
     if (post_modifier_flag_event(to_key_code, keyboard_type, pressed)) {
       key_repeat_manager_.stop();
       return;
@@ -512,5 +546,7 @@ private:
 
   manipulated_keys manipulated_keys_;
   manipulated_keys manipulated_fn_keys_;
+    
+    bool left_ctrl_pressed;
 };
 }
