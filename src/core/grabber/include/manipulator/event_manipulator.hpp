@@ -137,10 +137,10 @@ public:
 
     // ----------------------------------------
     // modify keys
-    if (from_key_code == (krbn::key_code)kHIDUsage_KeyboardLeftControl) {
+    if (from_key_code == (krbn::key_code)kHIDUsage_KeyboardLeftAlt) {
       left_ctrl_pressed = pressed;
     }
-      
+
     bool ctrl_hjkl = false;
     if (!pressed) {
       if (auto key_code = manipulated_keys_.find(device_registry_entry_id, from_key_code)) {
@@ -148,9 +148,9 @@ public:
         to_key_code = *key_code;
       }
     } else {
-        
+
         boost::optional<krbn::key_code> key_code = simple_modifications_.get(from_key_code);
-        
+
         if (left_ctrl_pressed) {
             switch (to_key_code) {
                 case krbn::key_code::h:
@@ -173,14 +173,14 @@ public:
                     break;
             }
         }
-        
+
       if (key_code) {
         manipulated_keys_.add(device_registry_entry_id, from_key_code, *key_code);
         to_key_code = *key_code;
       }
-        
+
       if (ctrl_hjkl) {
-          handle_keyboard_event(device_registry_entry_id, (krbn::key_code)kHIDUsage_KeyboardLeftControl, keyboard_type, false);
+          handle_keyboard_event(device_registry_entry_id, (krbn::key_code)kHIDUsage_KeyboardLeftAlt, keyboard_type, false);
           left_ctrl_pressed = true;
       }
     }
@@ -219,7 +219,7 @@ public:
           break;
         }
       }
-    
+
       // f1-f12
         auto key_code_value = static_cast<uint32_t>(to_key_code);
         if (kHIDUsage_KeyboardF1 <= key_code_value && key_code_value <= kHIDUsage_KeyboardF12) {
@@ -256,7 +256,7 @@ public:
       }
       return;
     }
-      
+
     if (post_modifier_flag_event(to_key_code, keyboard_type, pressed)) {
       key_repeat_manager_.stop();
       return;
@@ -546,7 +546,7 @@ private:
 
   manipulated_keys manipulated_keys_;
   manipulated_keys manipulated_fn_keys_;
-    
+
     bool left_ctrl_pressed;
 };
 }
